@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendário de Aniversários</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --fundo-principal: #050805;
+      --preto-painel: #0c120c;
+      --verde-neon: #00ff66;
+      --verde-neon-brilho: rgba(0, 255, 102, 0.4);
+      --verde-escuro: #003314;
+      --cinza-texto: #a3b8a8;
+      --branco-luz: #e6ffed;
+      --vermelho-alerta: #ff4d4d;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      font-weight: 400;
+    }
+
+    body {
+      background-color: var(--fundo-principal);
+      color: var(--branco-luz);
+      padding: 24px 16px;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    .barra-topo {
+      display: flex;
+      justify-content: flex-end;
+      max-width: 1100px;
+      margin: 0 auto 20px auto;
+    }
+
+    .btn-login {
+      background: transparent;
+      border: 1px solid #1f4027;
+      color: var(--cinza-texto);
+      padding: 7px 18px;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: all 0.2s;
+    }
+
+    .btn-login:hover {
+      border-color: var(--verde-neon);
+      color: var(--verde-neon);
+      box-shadow: 0 0 8px var(--verde-neon-brilho);
+    }
+
+    .btn-login.logado {
+      border-color: var(--vermelho-alerta);
+      color: var(--vermelho-alerta);
+    }
+
+    .btn-login.logado:hover {
+      background-color: var(--vermelho-alerta);
+      color: #ffffff;
+      box-shadow: none;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      color: var(--verde-neon);
+      font-size: 26px;
+      margin-bottom: 8px;
+      letter-spacing: 1.5px;
+      text-shadow: 0 0 10px var(--verde-neon-brilho);
+    }
+
+    header p {
+      color: var(--cinza-texto);
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
+
+    .secao-admin {
+      display: none;
+      margin-bottom: 40px;
+      background-color: var(--preto-painel);
+      border: 1px solid var(--verde-escuro);
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 0 25px rgba(0, 255, 102, 0.06);
+    }
+
+    .secao-admin.visivel {
+      display: block;
+    }
+
+    .titulo-admin {
+      color: var(--verde-neon);
+      font-size: 18px;
+      margin-bottom: 18px;
+      letter-spacing: 1px;
+    }
+
+    .form-linha {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: flex-end;
+      margin-bottom: 24px;
+    }
+
+    .campo {
+      flex: 1;
+      min-width: 220px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .campo label {
+      font-size: 13px;
+      color: var(--verde-neon);
+      letter-spacing: 0.5px;
+    }
+
+    .campo input {
+      padding: 11px;
+      background-color: #030503;
+      border: 1px solid #1b4523;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      color: var(--branco-luz);
+      transition: all 0.2s;
+    }
+
+    .campo input:focus {
+      border-color: var(--verde-neon);
+      box-shadow: 0 0 8px var(--verde-neon-brilho);
+    }
+
+    .campo input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1) hue-rotate(90deg) brightness(1.5);
+      cursor: pointer;
+    }
+
+    .btn-adicionar {
+      background: transparent;
+      color: var(--verde-neon);
+      border: 1px solid var(--verde-neon);
+      padding: 11px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--verde-neon-brilho);
+      transition: all 0.2s;
+    }
+
+    .btn-adicionar:hover {
+      background-color: var(--verde-neon);
+      color: #000000;
+      box-shadow: 0 0 20px var(--verde-neon);
+    }
+
+    .tabela-container {
+      border: 1px solid #14331a;
+      border-radius: 6px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #080f09;
+      color: var(--verde-neon);
+      padding: 12px 14px;
+      border-bottom: 1px solid #1b4523;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #0f2413;
+      color: var(--branco-luz);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .btn-excluir {
+      background: transparent;
+      border: 1px solid var(--vermelho-alerta);
+      color: var(--vermelho-alerta);
+      padding: 5px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .btn-excluir:hover {
+      background-color: var(--vermelho-alerta);
+      color: #ffffff;
+    }
+
+    .grid-alunos {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      position: relative;
+      background: linear-gradient(
+        135deg,
+        #111b13 0%,
+        #1b2d1f 25%,
+        #0d140e 45%,
+        #2a4a31 60%,
+        #101a12 80%,
+        #1a2b1e 100%
+      );
+      border: 1px solid rgba(0, 255, 102, 0.4);
+      border-radius: 6px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), inset 0 0 1px 1px rgba(255, 255, 255, 0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 255, 102, 0.2), inset 0 0 2px 1px rgba(255, 255, 255, 0.2);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: -100%;
+      left: -50%;
+      width: 200%;
+      height: 300%;
+      background: linear-gradient(
+        115deg,
+        rgba(255, 255, 255, 0) 38%,
+        rgba(255, 255, 255, 0.08) 42%,
+        rgba(0, 255, 102, 0.2) 47%,
+        rgba(255, 255, 255, 0.35) 50%,
+        rgba(0, 255, 102, 0.15) 53%,
+        rgba(255, 255, 255, 0) 58%
+      );
+      pointer-events: none;
+    }
+
+    .card-info {
+      flex: 1;
+      padding-right: 8px;
+    }
+
+    .card-nome {
+      font-size: 16px;
+      color: #ffffff;
+      margin-bottom: 4px;
+      word-break: break-word;
+      letter-spacing: 0.3px;
+    }
+
+    .card-data {
+      font-size: 12px;
+      color: var(--cinza-texto);
+    }
+
+    .card-dias {
+      background-color: #050a06;
+      border: 1px solid var(--verde-neon);
+      color: var(--verde-neon);
+      padding: 6px 12px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 12px;
+      white-space: nowrap;
+      box-shadow: inset 0 0 6px rgba(0, 255, 102, 0.2);
+    }
+
+    .card.hoje {
+      border-color: var(--verde-neon);
+      box-shadow: 0 0 15px rgba(0, 255, 102, 0.35);
+    }
+
+    .card.hoje .card-dias {
+      background-color: var(--verde-neon);
+      color: #000000;
+    }
+
+    .vazio {
+      text-align: center;
+      color: var(--cinza-texto);
+      font-size: 14px;
+      grid-column: 1 / -1;
+      padding: 40px 0;
+    }
+
+    .modal-fundo {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-fundo.aberto {
+      display: flex;
+    }
+
+    .modal-caixa {
+      background-color: var(--preto-painel);
+      border: 1px solid var(--verde-neon);
+      box-shadow: 0 0 20px rgba(0, 255, 102, 0.2);
+      border-radius: 8px;
+      padding: 24px;
+      width: 320px;
+    }
+
+    .modal-caixa h2 {
+      color: var(--verde-neon);
+      font-size: 18px;
+      margin-bottom: 16px;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+
+    .modal-corpo {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .modal-acoes {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .btn-modal {
+      flex: 1;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .btn-confirmar {
+      background: var(--verde-neon);
+      border: 1px solid var(--verde-neon);
+      color: #000000;
+    }
+
+    .btn-cancelar {
+      background: transparent;
+      border: 1px solid #333;
+      color: var(--cinza-texto);
+    }
+  </style>
+
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <div class="barra-topo">
+    <button id="btnAcessoLogin" class="btn-login" onclick="tratarCliqueLogin()">Login</button>
+  </div>
+
+  <div class="container">
+    <header>
+      <h1>CALENDÁRIO DE ANIVERSÁRIOS</h1>
+      <p>Próximos aniversariantes da turma em ordem cronológica</p>
+    </header>
+
+    <div id="painelAdmin" class="secao-admin">
+      <div class="titulo-admin">PAINEL DO PROFESSOR</div>
+      <form id="formAluno" class="form-linha">
+        <div class="campo">
+          <label for="nome">Nome do aluno</label>
+          <input type="text" id="nome" placeholder="Digite o nome completo" required>
+        </div>
+        <div class="campo">
+          <label for="dataNascimento">Data de nascimento</label>
+          <input type="date" id="dataNascimento" required>
+        </div>
+        <button type="submit" class="btn-adicionar">Adicionar Aluno</button>
+      </form>
+
+      <div class="tabela-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Data de Nasc.</th>
+              <th>Dias Restantes</th>
+              <th style="width: 100px;">Ação</th>
+            </tr>
+          </thead>
+          <tbody id="tabelaAdminCorpo"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="grid-alunos" id="listaCardsVisitante"></div>
+  </div>
+
+  <div id="modalLogin" class="modal-fundo">
+    <div class="modal-caixa">
+      <h2>Acesso do Professor</h2>
+      <div class="modal-corpo">
+        <div class="campo">
+          <label for="usuarioLogin">Usuário:</label>
+          <input type="text" id="usuarioLogin" placeholder="Digite o usuário">
+        </div>
+        <div class="campo">
+          <label for="senhaAdmin">Senha:</label>
+          <input type="password" id="senhaAdmin" placeholder="Digite a senha">
+        </div>
+      </div>
+      <div class="modal-acoes">
+        <button class="btn-modal btn-cancelar" onclick="fecharModalLogin()">Cancelar</button>
+        <button class="btn-modal btn-confirmar" onclick="autenticarAdmin()">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDbSIk39--xgLto2PXONEJJqwrpu66ah84",
+      authDomain: "projeto-calendario-aniversario.firebaseapp.com",
+      projectId: "projeto-calendario-aniversario",
+      storageBucket: "projeto-calendario-aniversario.firebasestorage.app",
+      messagingSenderId: "841706322233",
+      appId: "1:841706322233:web:82e7d42269a96dd25290e8"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const USUARIO_CORRETO = "professor";
+    const SENHA_CORRETA = "Fpr@pinhais";
+
+    let isAdminLogado = false;
+    let alunos = [];
+
+    const form = document.getElementById("formAluno");
+    const containerCards = document.getElementById("listaCardsVisitante");
+    const tabelaCorpo = document.getElementById("tabelaAdminCorpo");
+    const painelAdmin = document.getElementById("painelAdmin");
+    const btnLogin = document.getElementById("btnAcessoLogin");
+    const modalLogin = document.getElementById("modalLogin");
+    const campoUsuario = document.getElementById("usuarioLogin");
+    const campoSenha = document.getElementById("senhaAdmin");
+
+    db.collection("alunos").onSnapshot((snapshot) => {
+      alunos = [];
+      snapshot.forEach((doc) => {
+        alunos.push({ id: doc.id, ...doc.data() });
+      });
+      renderizarTudo();
+    }, (erro) => {
+      console.error("Erro ao carregar dados do Firestore:", erro);
+    });
+
+    function tratarCliqueLogin() {
+      if (isAdminLogado) {
+        isAdminLogado = false;
+        painelAdmin.classList.remove("visivel");
+        btnLogin.textContent = "Login";
+        btnLogin.classList.remove("logado");
+      } else {
+        campoUsuario.value = "";
+        campoSenha.value = "";
+        modalLogin.classList.add("aberto");
+        campoUsuario.focus();
+      }
+    }
+
+    function fecharModalLogin() {
+      modalLogin.classList.remove("aberto");
+    }
+
+    function autenticarAdmin() {
+      const usuarioDigitado = campoUsuario.value.trim();
+      const senhaDigitada = campoSenha.value;
+
+      if (usuarioDigitado === USUARIO_CORRETO && senhaDigitada === SENHA_CORRETA) {
+        isAdminLogado = true;
+        painelAdmin.classList.add("visivel");
+        btnLogin.textContent = "Sair";
+        btnLogin.classList.add("logado");
+        fecharModalLogin();
+      } else {
+        alert("Usuário ou senha incorretos.");
+      }
+    }
+
+    campoUsuario.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") campoSenha.focus();
+    });
+
+    campoSenha.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") autenticarAdmin();
+    });
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const nome = document.getElementById("nome").value.trim();
+      const dataNascimento = document.getElementById("dataNascimento").value;
+
+      if (!nome || !dataNascimento) return;
+
+      db.collection("alunos").add({
+        nome: nome,
+        data: dataNascimento
+      }).then(() => {
+        form.reset();
+      }).catch((erro) => {
+        alert("Erro ao adicionar: " + erro.message);
+      });
+    });
+
+    function removerAluno(id) {
+      if (confirm("Deseja realmente remover este registro?")) {
+        db.collection("alunos").doc(id).delete().catch((erro) => {
+          alert("Erro ao remover: " + erro.message);
+        });
+      }
+    }
+
+    function calcularDiasRestantes(dataString) {
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0);
+
+      const partes = dataString.split("-");
+      const mesNasc = parseInt(partes[1], 10) - 1;
+      const diaNasc = parseInt(partes[2], 10);
+
+      let proximoAniversario = new Date(hoje.getFullYear(), mesNasc, diaNasc);
+      proximoAniversario.setHours(0, 0, 0, 0);
+
+      if (proximoAniversario < hoje) {
+        proximoAniversario.setFullYear(hoje.getFullYear() + 1);
+      }
+
+      const diferencaTempo = proximoAniversario.getTime() - hoje.getTime();
+      return Math.round(diferencaTempo / (1000 * 60 * 60 * 24));
+    }
+
+    function formatarDataBR(dataString) {
+      const partes = dataString.split("-");
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+
+    function renderizarTudo() {
+      const alunosOrdenados = alunos.map(aluno => {
+        return {
+          ...aluno,
+          diasRestantes: calcularDiasRestantes(aluno.data)
+        };
+      }).sort((a, b) => a.diasRestantes - b.diasRestantes);
+
+      containerCards.innerHTML = "";
+      if (alunosOrdenados.length === 0) {
+        containerCards.innerHTML = '<div class="vazio">Nenhum aniversário cadastrado no momento.</div>';
+      } else {
+        alunosOrdenados.forEach(aluno => {
+          const card = document.createElement("div");
+          card.className = "card";
+
+          let textoDias = "";
+          if (aluno.diasRestantes === 0) {
+            card.classList.add("hoje");
+            textoDias = "É hoje!";
+          } else if (aluno.diasRestantes === 1) {
+            textoDias = "Falta 1 dia";
+          } else {
+            textoDias = `Faltam ${aluno.diasRestantes} dias`;
+          }
+
+          card.innerHTML = `
+            <div class="card-info">
+              <div class="card-nome">${aluno.nome}</div>
+              <div class="card-data">Nascimento: ${formatarDataBR(aluno.data)}</div>
+            </div>
+            <div class="card-dias">${textoDias}</div>
+          `;
+          containerCards.appendChild(card);
+        });
+      }
+
+      tabelaCorpo.innerHTML = "";
+      if (alunosOrdenados.length === 0) {
+        tabelaCorpo.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--cinza-texto); padding: 24px;">Nenhum aluno registrado.</td></tr>';
+      } else {
+        alunosOrdenados.forEach(aluno => {
+          const tr = document.createElement("tr");
+          const textoDias = aluno.diasRestantes === 0 ? "Hoje!" : `${aluno.diasRestantes} dia(s)`;
+
+          tr.innerHTML = `
+            <td>${aluno.nome}</td>
+            <td>${formatarDataBR(aluno.data)}</td>
+            <td>${textoDias}</td>
+            <td>
+              <button class="btn-excluir" onclick="removerAluno('${aluno.id}')">Excluir</button>
+            </td>
+          `;
+          tabelaCorpo.appendChild(tr);
+        });
+      }
+    }
+  </script>
+</body>
+</html>
